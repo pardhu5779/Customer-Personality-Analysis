@@ -1,0 +1,48 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import pickle
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load clustering model
+with open("DBSCAN_model.pkl", "rb") as file:
+    model = pickle.load(file)
+
+st.title("Customer Personality Analysis - Clustering App")
+
+# File uploader
+uploaded_file = st.file_uploader("marketing_campaign (1)", type="csv")
+
+if uploaded_file is not None:
+    data = pd.read_csv(uploaded_file)
+    st.write("marketing_campaign (1)")
+    st.dataframe(data.head())
+
+    
+    data_processed = data.drop(columns=['income'], errors='ignore')
+
+    # Predict clusters
+    clusters = model.predict(data_processed)
+
+    data['Cluster'] = clusters
+    st.write("Clustered Customer Data:")
+    st.dataframe(data)
+
+    # Cluster distribution
+    st.subheader("Cluster Distribution")
+    cluster_counts = data['Cluster'].value_counts().sort_index()
+    st.bar_chart(cluster_counts)
+
+
+    st.subheader("Spending Pattern by Cluster")
+    mnt_cols = ['MntWines', 'MntFruits', 'MntMeatProducts', 'MntFishProducts', 'MntSweetProducts', 'MntGoldProds']
+    cluster_means = data.groupby('Cluster')[mnt_cols].mean()
+
+    st.dataframe(cluster_means)
+
+    # Visualize spending
+    st.bar_chart(cluster_means)
+
+else:
+    st.info("marketing_campaign (1)")
